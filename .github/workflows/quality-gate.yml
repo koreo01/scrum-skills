@@ -1,0 +1,75 @@
+name: Quality Gate
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit message format
+        run: |
+          echo "Checking commit messages..."
+          ERRORS=0
+          while IFS= read -r line; do
+            HASH=$(echo "$line" | cut -d' ' -f1)
+            MSG=$(echo "$line" | cut -d' ' -f2-)
+            # マージコミットはスキップ
+            if echo "$MSG" | grep -qE '^Merge '; then
+              continue
+            fi
+            # #xxx 形式のチケット番号が含まれているか（.claude/config/ticket-system.json の commitMessage.pattern 参照）
+            if ! echo "$MSG" | grep -qE '^\[#[0-9]+(/#[0-9]+)?\]'; then
+              echo "  NG: $HASH $MSG"
+              echo "      -> コミットメッセージに [#xxx] または [#xxx/#yyy] が必要です"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done < <(git log --oneline origin/main..HEAD 2>/dev/null || git log --oneline -5)
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo ""
+            echo "ERROR: $ERRORS 件のコミットメッセージがフォーマット違反です"
+            exit 1
+          fi
+          echo "  OK: 全コミットメッセージがフォーマット準拠"
+
+      - name: Shell script syntax check
+        run: |
+          echo "Checking shell scripts..."
+          ERRORS=0
+          CHECKED=0
+          while IFS= read -r script; do
+            if [ -f "$script" ]; then
+              CHECKED=$((CHECKED + 1))
+              if ! bash -n "$script" 2>/tmp/sh-error.txt; then
+                echo "  NG: $script"
+                cat /tmp/sh-error.txt
+                ERRORS=$((ERRORS + 1))
+              fi
+            fi
+          done < <(find . -name "*.sh" -type f | sort)
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo ""
+            echo "ERROR: $ERRORS 件のシェルスクリプトに構文エラーがあります"
+            exit 1
+          fi
+          echo "  OK: $CHECKED 件のシェルスクリプト構文チェック通過"
+
+      - name: Project-specific checks
+        run: |
+          if [ -f ".claude/hooks/project-checks.sh" ] && [ -x ".claude/hooks/project-checks.sh" ]; then
+            echo "Running project-specific checks..."
+            bash .claude/hooks/project-checks.sh
+          else
+            echo "  SKIP: project-checks.sh not found"
+          fi

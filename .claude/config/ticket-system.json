@@ -1,0 +1,78 @@
+{
+  "_description": "本リポジトリで利用するチケット管理システムの設定値。Hook / rules / commands が参照する。",
+  "_customizationPolicy": "本ファイルの値（特に ticketId.prefix / pattern / example、commitMessage.pattern / formats / examples、branchNaming.formats / pattern / examples）は、利用する組織・ユーザーが採用しているチケット管理システム（Notion / Jira / Redmine / Linear / GitHub Issues 等）の ID 表記に合わせて書き換えること。本リポジトリのデフォルト値は GitHub Issues の `#123` 形式（gh CLI 経由）を採用しているが、他組織で流用する際はプレフィックス・正規表現・コミット例・ブランチ命名例の全てを自組織の表記へ置換する。`TICKET-123` 等の中立表現はあくまで本リポジトリの placeholder 値であり、これも自組織で利用する placeholder 値があれば差し替えてよい。",
+  "_appliesTo": [
+    ".claude/hooks/pre-bash-bi-xxx-check.sh",
+    ".claude/hooks/pre-bash-branch-source-check.sh",
+    ".claude/rules/*.md",
+    ".claude/commands/dev/*.md",
+    ".claude/commands/pbi/*.md",
+    "CLAUDE.md"
+  ],
+
+  "ticketSystem": {
+    "name": "GitHub Issues",
+    "note": "gh CLI（`gh issue` / `gh pr`）経由で操作する。MCPサーバーは使用しない。単一リポジトリの Issues で Issue / Task / SubTask を一元管理し、`type:*` ラベルで種別を、`status:*` ラベルで詳細ステータスを識別する（Issue の open/closed だけでは To Do〜Reviewing の粒度を表現できないため）。親子関係は Notion のようなリレーションフィールドが無いため、本文中の `Parent: #123` 記法と、親 Issue 本文のタスクリスト（`- [ ] #124`）で表現する。"
+  },
+
+  "fieldMapping": {
+    "_note": "Notion のプロパティ相当を GitHub Issues でどう表現するかの対応表。commands/pbi 配下のチェック・テンプレート Agent が参照する。",
+    "type": {
+      "mechanism": "label",
+      "note": "`type:story` / `type:task` / `type:subtask` / `type:tech` / `type:bug` / `type:needs` / `type:request` ラベルで種別を表す",
+      "values": ["type:story", "type:task", "type:subtask", "type:tech", "type:bug", "type:needs", "type:request"]
+    },
+    "status": {
+      "mechanism": "label + open/closed",
+      "note": "Issue の open/closed に加え、`status:refining` / `status:refined` / `status:in-progress` / `status:reviewing` ラベルで細分化する。ラベルなし + open = To Do、closed = Done",
+      "values": ["status:refining", "status:refined", "status:in-progress", "status:reviewing"]
+    },
+    "parentTicket": {
+      "mechanism": "body-text",
+      "note": "GitHub Issues にリレーションフィールドが無いため、本文に `Parent: #123` を記載する運用とする（ラベルでは特定の親 Issue 番号を表現できないため）",
+      "format": "Parent: #{parentIssueNumber}"
+    },
+    "childTickets": {
+      "mechanism": "body-task-list",
+      "note": "親 Issue の本文にタスクリストで子 Issue を列挙する。GitHub がチェック状態を自動集計する",
+      "format": "- [ ] #{childIssueNumber}"
+    }
+  },
+
+  "ticketId": {
+    "_note": "prefix / pattern / example は採用ツールの ID 表記に合わせて書き換える（例: Jira なら prefix=\"PROJ-\" / pattern=\"PROJ-\\d+\"）。placeholder は公開ドキュメント内で抽象的にチケット ID を示すときの中立表現。",
+    "prefix": "#",
+    "pattern": "#\\d+",
+    "example": "#1234",
+    "placeholder": "#123",
+    "placeholderSecondary": "#456"
+  },
+
+  "commitMessage": {
+    "_note": "pattern は Hook（pre-bash-bi-xxx-check.sh）が grep -qE で利用する正規表現。採用ツールの ID 形式に合わせて書き換える。",
+    "pattern": "\\[#\\d+",
+    "formats": {
+      "withSubTask": "[#{parentTaskId}/#{subTaskId}] {説明}",
+      "withoutSubTask": "[#{taskId}] {説明}"
+    },
+    "examples": {
+      "withSubTask": "[#100/#201] 見積もりセクション追加",
+      "withoutSubTask": "[#100] 誤字修正"
+    }
+  },
+
+  "branchNaming": {
+    "_note": "pattern は Hook（pre-bash-branch-source-check.sh で利用予定）の正規表現。formats / examples / summaryRule は rules / commands が参照する。採用ツールの ID 形式に合わせて書き換える。",
+    "formats": {
+      "feature": "feat/{StoryId}_{summary}",
+      "chore": "chore/{TaskId}_{summary}"
+    },
+    "pattern": "^(feat|chore)/\\d+_[a-z0-9-]+$",
+    "summaryRule": "英語・小文字・ハイフン区切り・5単語以内",
+    "examples": {
+      "feature": "feat/100_add-login-page",
+      "chore": "chore/200_update-branch-strategy"
+    },
+    "sourceBranch": "main"
+  }
+}

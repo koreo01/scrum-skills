@@ -1,0 +1,152 @@
+# ebanoide 設定ファイル（テンプレート）
+# config.example.yaml をコピーして config.yaml として使用
+
+# ─────────────────────────────────────
+# 配信タイミング
+# ─────────────────────────────────────
+delivery:
+  daily_time: "19:00"           # 日次サマリ配信時刻（HH:MM）
+  timezone: "Asia/Tokyo"        # タイムゾーン
+  weekday_only: false           # 平日のみ配信するか
+  immediate_for_tier_s: false   # Tier S(最重要)を即時通知するか（false=日次サマリでまとめる）
+
+# ─────────────────────────────────────
+# 分析対象会議
+# ─────────────────────────────────────
+target_meetings:
+  # 議事録ファイル名にこれらのキーワードが含まれていれば分析対象
+  include_keywords:
+    - "プランニング"
+    - "リファインメント"
+    - "レトロ"
+    - "改善"
+    - "ふりかえり"
+    - "1on1"
+  # これらは除外
+  exclude_keywords:
+    - "顧客提案"
+    - "営業"
+    - "個人面談"  # 機微情報を含む可能性
+
+# ─────────────────────────────────────
+# 検出パターン
+# ─────────────────────────────────────
+enabled_patterns:
+  - id: "V-1"
+    name: "過去経緯不明の放置"
+    enabled: true
+    notify_tier: "S"
+    delivery_mode: "summary"          # summary / summary_tail_only / immediate
+
+  - id: "V-4"
+    name: "注意力依存の対症療法"
+    enabled: true
+    notify_tier: "A"
+    delivery_mode: "summary"
+
+  - id: "V-3"
+    name: "判定基準なき並列提案"
+    enabled: true
+    notify_tier: "A"
+    delivery_mode: "summary"
+
+  - id: "V-5"
+    name: "保留表現の連鎖"
+    enabled: true
+    notify_tier: "B"
+    delivery_mode: "summary"
+    # 検出閾値: 同一議論内で「一旦」「とりあえず」「ま、」が3回以上
+    threshold:
+      reservation_words_count: 3
+
+  - id: "V-6"
+    name: "顧客要望の解像度不足"
+    enabled: true
+    notify_tier: "B"
+    delivery_mode: "summary"
+
+  - id: "S-3"
+    name: "100か0の二元論"
+    enabled: true
+    notify_tier: "B"
+    delivery_mode: "summary"
+
+  - id: "V-2"
+    name: "根拠なき確認質問"
+    enabled: true
+    notify_tier: "C"
+    delivery_mode: "summary_tail_only"  # サマリ末尾の傾向欄のみ
+    # 誤検出が多いパターンなので、確信度がhighのみ通知
+    min_confidence: "high"
+
+# ─────────────────────────────────────
+# 配信先
+# ─────────────────────────────────────
+notification:
+  channel: "DM"                              # DM or channel_id
+  recipient_user_id: "U_XXXXXXXX"            # あなた（SM）のSlack User ID
+  max_items_per_day: 10                      # 1日あたり通知件数上限
+  language: "ja"
+
+# ─────────────────────────────────────
+# トーン・強さ
+# ─────────────────────────────────────
+tone:
+  strength_level: "faithful"     # faithful(忠実再現) / softened(緩和)
+  include_speaker_name: true     # 発言者名を含めるか
+  display_level: "brief"         # brief(簡易) / full(フル)
+
+# ─────────────────────────────────────
+# メタ分析（日次サマリの傾向欄）
+# ─────────────────────────────────────
+meta_analysis:
+  enabled: true
+  trend_window_days: 7           # 過去N日間の傾向分析
+
+# ─────────────────────────────────────
+# AI モデル設定
+# ─────────────────────────────────────
+ai_models:
+  detector:
+    model: "claude-haiku-4-5-20251001"      # 検出は軽量モデルで十分
+    max_tokens: 1024
+  responder:
+    model: "claude-opus-4-7"                 # 応答生成は最強モデル
+    max_tokens: 2048
+  guard:
+    model: "claude-haiku-4-5-20251001"      # ガードチェックは軽量モデル
+    max_tokens: 512
+  aggregator:
+    model: "claude-opus-4-7"                 # サマリ生成も最強モデル
+    max_tokens: 4096
+
+# ─────────────────────────────────────
+# 議事録ソース
+# ─────────────────────────────────────
+transcript_source:
+  type: "google_drive"                       # google_drive or local
+  google_drive:
+    folder_id: "XXXXXXXXXXX"                 # Meet Recordings フォルダID
+    credentials_path: "./credentials/gdrive.json"
+  local:
+    path: "/tmp/transcripts/"
+
+# ─────────────────────────────────────
+# ログ・データ保存
+# ─────────────────────────────────────
+logging:
+  log_level: "INFO"
+  log_file: "./logs/ebanoide.log"
+  # 分析結果の蓄積（過去傾向分析のため）
+  analysis_history_path: "./data/analysis_history/"
+
+# ─────────────────────────────────────
+# 安全装置
+# ─────────────────────────────────────
+safety:
+  # 1議事録あたりの最大検出件数（過剰通知防止）
+  max_detections_per_meeting: 5
+  # 同一発言者・同一パターンへの1日あたり最大通知数
+  max_per_person_per_pattern_per_day: 2
+  # ドライランモード（実際にSlackに送信せずログだけ出す）
+  dry_run: false

@@ -1,0 +1,88 @@
+# TDD Session State Template
+# 
+# このファイルはTDDセッションの状態を追跡するためのテンプレートです。
+# /tdd コマンド実行時に .tdd-session.yml として作成されます。
+
+# セッション情報
+session:
+  id: ""                          # セッションID（自動生成）
+  started_at: ""                  # 開始日時
+  feature: ""                     # 実装対象の機能
+  description: ""                 # 機能の説明
+
+# 現在の状態
+current:
+  phase: "design"                 # design | red | green | refactor
+  test_case: ""                   # 現在取り組んでいるテストケース
+  cycle: 1                        # 現在のサイクル番号
+
+# スケルトン（設計フェーズで定義）
+skeleton:
+  class_name: ""
+  methods: []
+  # 例:
+  # class_name: "Employee"
+  # methods:
+  #   - name: "name"
+  #     description: "名前を取得する"
+  #   - name: "base_salary"
+  #     description: "基本給を取得する"
+  #   - name: "salary"
+  #     description: "給料を計算する"
+
+# テストケース一覧
+test_cases:
+  # 例:
+  # - name: "名前を取得できる"
+  #   status: "completed"      # pending | in_progress | completed
+  #   cycle: 1
+  # - name: "基本給を取得できる"
+  #   status: "in_progress"
+  #   cycle: 2
+  # - name: "給料を計算できる"
+  #   status: "pending"
+  #   cycle: null
+
+# サイクル履歴
+cycles:
+  # 例:
+  # - cycle: 1
+  #   test_case: "名前を取得できる"
+  #   phases:
+  #     design:
+  #       completed: true
+  #       timestamp: "2026-03-27T14:00:00"
+  #     red:
+  #       completed: true
+  #       timestamp: "2026-03-27T14:05:00"
+  #       test_file: "spec/models/employee_spec.rb"
+  #     green:
+  #       completed: true
+  #       timestamp: "2026-03-27T14:10:00"
+  #       impl_file: "app/models/employee.rb"
+  #     refactor:
+  #       completed: true
+  #       timestamp: "2026-03-27T14:15:00"
+  #       changes: "attr_reader使用に変更"
+
+# 警告履歴
+warnings:
+  # 例:
+  # - type: "skipped_refactor"
+  #   cycle: 1
+  #   timestamp: "2026-03-27T14:12:00"
+  #   message: "Refactorフェーズをスキップしようとしました"
+  #   resolved: true
+  # - type: "large_change"
+  #   cycle: 2
+  #   timestamp: "2026-03-27T14:20:00"
+  #   message: "複数機能を同時実装しようとしました"
+  #   resolved: false
+
+# 統計
+stats:
+  total_cycles: 0
+  completed_cycles: 0
+  total_warnings: 0
+  resolved_warnings: 0
+  session_duration_minutes: 0

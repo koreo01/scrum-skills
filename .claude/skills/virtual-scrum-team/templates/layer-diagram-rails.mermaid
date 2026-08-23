@@ -1,0 +1,91 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+
+graph TD
+    %% =====================================
+    %% Presentation Layer
+    %% =====================================
+    subgraph Presentation["🖥️ Presentation Layer"]
+        direction TB
+        Controllers["Controllers<br/>app/controllers/"]
+        Views["Views<br/>app/views/"]
+        Helpers["Helpers<br/>app/helpers/"]
+        Serializers["Serializers<br/>app/serializers/"]
+    end
+
+    %% =====================================
+    %% Application Layer
+    %% =====================================
+    subgraph Application["⚙️ Application Layer"]
+        direction TB
+        Services["Services<br/>app/services/"]
+        UseCases["Use Cases<br/>app/use_cases/"]
+        Jobs["Jobs<br/>app/jobs/"]
+        Mailers["Mailers<br/>app/mailers/"]
+    end
+
+    %% =====================================
+    %% Domain Layer
+    %% =====================================
+    subgraph Domain["💎 Domain Layer"]
+        direction TB
+        Models["Models<br/>app/models/"]
+        ValueObjects["Value Objects<br/>app/value_objects/"]
+        Validators["Validators<br/>app/validators/"]
+    end
+
+    %% =====================================
+    %% Infrastructure Layer
+    %% =====================================
+    subgraph Infrastructure["🔧 Infrastructure Layer"]
+        direction TB
+        Repositories["Repositories<br/>app/repositories/"]
+        ExternalAPI["External APIs<br/>lib/external/"]
+        Adapters["Adapters<br/>app/adapters/"]
+    end
+
+    %% =====================================
+    %% 許可される依存関係（実線矢印）
+    %% =====================================
+    
+    %% Presentation → Application
+    Controllers -->|"uses"| Services
+    Controllers -->|"uses"| UseCases
+    
+    %% Presentation → Domain（参照のみ）
+    Controllers -.->|"references"| Models
+    Serializers -.->|"serializes"| Models
+    
+    %% Application → Domain
+    Services -->|"uses"| Models
+    UseCases -->|"uses"| Models
+    Jobs -->|"uses"| Services
+    Mailers -->|"uses"| Models
+    
+    %% Application → Infrastructure
+    Services -->|"uses"| Repositories
+    UseCases -->|"uses"| Repositories
+    
+    %% Infrastructure → Domain
+    Repositories -->|"returns"| Models
+
+    %% =====================================
+    %% 禁止される依存関係（破線・赤）
+    %% =====================================
+    
+    %% コメントアウト: 実際には描画しない
+    %% Models -.->|"❌ FORBIDDEN"| Controllers
+    %% Models -.->|"❌ FORBIDDEN"| Services
+    %% Repositories -.->|"❌ FORBIDDEN"| Controllers
+
+    %% =====================================
+    %% スタイル定義
+    %% =====================================
+    classDef presentation fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef application fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef domain fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef infrastructure fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class Controllers,Views,Helpers,Serializers presentation
+    class Services,UseCases,Jobs,Mailers application
+    class Models,ValueObjects,Validators domain
+    class Repositories,ExternalAPI,Adapters infrastructure

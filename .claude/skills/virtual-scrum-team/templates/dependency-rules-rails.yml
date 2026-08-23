@@ -1,0 +1,162 @@
+# Dependency Rules Configuration
+# プロジェクト: [プロジェクト名]
+# 作成日: [日付]
+# 
+# このファイルは依存関係ルールを定義します。
+# Dependency Guardian Agent がこのルールに基づいてチェックを行います。
+
+version: "1.0"
+
+project:
+  name: "Your Project Name"  # TODO: プロジェクト名を設定
+  type: "rails"
+
+# =====================================
+# レイヤー定義
+# =====================================
+# プロジェクトのアーキテクチャに合わせて修正してください
+layers:
+  - name: presentation
+    description: "プレゼンテーション層（UI/API）"
+    paths:
+      - "app/controllers/**"
+      - "app/views/**"
+      - "app/helpers/**"
+      - "app/serializers/**"
+
+  - name: application
+    description: "アプリケーション層（ユースケース/サービス）"
+    paths:
+      - "app/services/**"
+      - "app/use_cases/**"
+      - "app/interactors/**"
+      - "app/jobs/**"
+      - "app/mailers/**"
+
+  - name: domain
+    description: "ドメイン層（ビジネスロジック）"
+    paths:
+      - "app/models/**"
+      - "app/domain/**"
+      - "app/value_objects/**"
+      - "app/validators/**"
+
+  - name: infrastructure
+    description: "インフラストラクチャ層（外部連携）"
+    paths:
+      - "app/repositories/**"
+      - "lib/external/**"
+      - "app/adapters/**"
+      - "app/clients/**"
+
+# =====================================
+# レイヤー方向ルール
+# =====================================
+layer_rules:
+  # 許可される依存方向
+  # 原則: 上位層 → 下位層 の方向のみ許可
+  allowed_directions:
+    - from: presentation
+      to: [application, domain]
+    - from: application
+      to: [domain, infrastructure]
+    - from: infrastructure
+      to: [domain]
+
+  # 禁止される依存方向
+  forbidden_directions:
+    - from: domain
+      to: [presentation, application, infrastructure]
+      reason: "ドメイン層は他の層に依存してはならない（Pure Domain）"
+    - from: infrastructure
+      to: [presentation, application]
+      reason: "インフラ層は上位層に依存してはならない"
+    - from: presentation
+      to: [infrastructure]
+      reason: "プレゼンテーション層はインフラ層に直接依存しない"
+
+# =====================================
+# 循環参照ルール
+# =====================================
+circular_dependency:
+  enabled: true
+  severity: "error"  # error | warning
+  exceptions:
+    # ActiveRecordのassociationによる相互参照は許容
+    - pattern: "app/models/**"
+      reason: "ActiveRecordのassociationは許容"
+
+# =====================================
+# 明示的な禁止（BlackList）
+# =====================================
+# TODO: プロジェクト固有の禁止ルールを追加
+blacklist:
+  # Controller → Repository 直接アクセス禁止
+  - from: "app/controllers/**"
+    to: "app/repositories/**"
+    reason: "ControllerからRepositoryを直接呼ばない。Serviceを経由すること"
+    severity: "error"
+
+  # Controller → 外部API直接アクセス禁止
+  - from: "app/controllers/**"
+    to: "lib/external/**"
+    reason: "Controllerから外部APIを直接呼ばない。Serviceを経由すること"
+    severity: "error"
+
+  # Model → Controller 参照禁止
+  - from: "app/models/**"
+    to: "app/controllers/**"
+    reason: "ModelからControllerへの参照は禁止"
+    severity: "error"
+
+  # Job → Controller 参照禁止
+  - from: "app/jobs/**"
+    to: "app/controllers/**"
+    reason: "JobからControllerへの参照は禁止"
+    severity: "error"
+
+  # Model → Service 参照禁止（Callback等で起きがち）
+  - from: "app/models/**"
+    to: "app/services/**"
+    reason: "ModelからServiceを呼ばない。ロジックはService側に置くこと"
+    severity: "warning"
+
+# =====================================
+# 明示的な許可（WhiteList - 例外）
+# =====================================
+# TODO: 正当な理由がある例外を追加
+whitelist:
+  # 例: 外部連携専用Serviceは外部APIライブラリを使用可能
+  - from: "app/services/external/**"
+    to: "lib/external/**"
+    reason: "外部連携Serviceは外部APIライブラリを直接使用可能"
+
+  # 例: APIコントローラーはSerializerを使用可能
+  - from: "app/controllers/api/**"
+    to: "app/serializers/**"
+    reason: "APIコントローラーはSerializerを使用可能"
+
+# =====================================
+# 除外パターン
+# =====================================
+ignore:
+  paths:
+    - "spec/**"
+    - "test/**"
+    - "vendor/**"
+    - "node_modules/**"
+    - "tmp/**"
+    - "log/**"
+    - "db/migrate/**"
+    - "config/**"
+  files:
+    - "**/*_spec.rb"
+    - "**/*_test.rb"
+
+# =====================================
+# レポート設定
+# =====================================
+reporting:
+  output_dir: "analysis/architecture"
+  format: "markdown"  # markdown | json | html
+  include_suggestions: true
