@@ -1,0 +1,42 @@
+# 議事録抽出時の固有名詞辞書
+# invoke-story-ticket-helper がチケット候補 Draft を生成する際に参照する
+#
+# handling の値:
+#   mask        - 出力時に [顧客名] などのプレースホルダーに置換する
+#   internal_id - 内部識別子に変換する（GitHub Issue 起票時は as_is を推奨）
+#   as_is       - そのまま出力する
+
+version: "1.0"
+
+# 顧客会社名（起票時はマスクまたは内部 ID 推奨）
+# 例:
+#   - name: "顧客企業名"
+#     handling: "mask"
+#     note: "備考"
+customers: []
+
+# パートナー会社名
+# 例:
+#   - name: "パートナー企業名"
+#     handling: "internal_id"
+#     internal_id: "PARTNER-001"
+#     note: "備考"
+partners: []
+
+# 社内メンバー（起票時はそのまま記載 OK）
+# 例:
+#   - name: "氏名またはハンドル名"
+#     aliases: ["呼び名の別表記"]
+#     role: "役割（PO/Engineer/Designer等）"
+#     handling: "as_is"
+internal_members: []
+
+# 検出ルール
+detection_rules:
+  # 議事録内で顧客名・パートナー名を検出した場合の動作
+  on_customer_detected:
+    log_warning: true
+    prompt_user: true   # Draft 出力時にユーザーに確認を促す
+  on_partner_detected:
+    log_warning: false
+    prompt_user: false  # パートナー名は内部 ID に自動変換

@@ -1,0 +1,20 @@
+# 実行結果
+analysis/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code 個人/動的ファイル（チーム共有資産はコミット対象）
+.claude/settings.local.json
+.claude/status/
+.claude/summaries/
+.claude/projects/
+.claude/status/.session-phase
+
+# Secrets
+.env
+
+# VSCode 個人設定（マシン固有の環境変数等を含むためコミットしない）
+.vscode/

@@ -1,0 +1,112 @@
+{
+  "project": {
+    "name": "scrum-skills",
+    "description": "スクラム開発支援 Claude Code スキル集"
+  },
+  "team": {
+    "sprint_length_weeks": 1,
+    "daily_scrum_time": "10:00",
+    "timezone": "Asia/Tokyo"
+  },
+  "agents": {
+    "default": "sm-core",
+    "enabled": [
+      "sm-core",
+      "po",
+      "dev-team"
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(git push --force)*",
+      "Bash(git reset --hard)*",
+      "Bash(git clean -f)*"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-ask-user-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude_ai_",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-mcp-toolsearch-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-push-quality-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-bash-bi-xxx-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-bash-branch-source-check.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-commit-check.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/user-prompt-phase-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop-phase-check.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "このファイルは必要に応じてカスタマイズしてください"
+}
