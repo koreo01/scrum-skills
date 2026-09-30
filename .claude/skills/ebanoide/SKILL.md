@@ -1,6 +1,6 @@
 # ebanoide Skill
 
-Google Meets 議事録を日次バッチで分析し、SM（スクラムマスター）が介入すべき発話パターンを検出して Slack DM で通知するシステムです。
+企業・Project で承認された会議・コミュニケーション基盤から取得した議事録・会話履歴を日次バッチで分析し、SM（スクラムマスター）が介入すべき発話パターンを検出して、承認された通知チャネル（有効化されている場合）で通知するシステムです。
 SM の観察・介入タイミングを機械的に補完し、スクラムガバナンスの継続的維持を支援します。
 
 ## トリガー条件
@@ -10,6 +10,21 @@ SM の観察・介入タイミングを機械的に補完し、スクラムガ�
 - 「ebanoide」「議事録を分析して」「SM介入候補」
 - 「スプリントイベントの議事録をチェックして」
 - `scripts/pipeline.py` の実行時
+
+---
+
+## 外部連携ポリシー
+
+ebanoide は3つの外部連携ポイントを持つが、いずれも特定サービスへの依存を前提としない概念として定義する。実際に使用するサービスは、利用企業・Projectが承認したTool/Connectorに限定する（[AGENTS.md](../../../AGENTS.md) の「外部ツール利用の共通原則」参照）。
+
+| 連携ポイント | 概念 | デフォルト | 例 |
+| --- | --- | --- | --- |
+| Conversation Source | 議事録・チャネル履歴の入力元 | `local`（ローカルファイル / ユーザー提供データ） | 承認済みConnector（Google Drive、Microsoft Teams 等） |
+| AI Provider | Detector/Responder/Guard/Aggregatorで使用するAIモデルの提供元 | 企業/PJが承認したAI Providerを明示的に選択 | Anthropic API（Optional Integration。必須ではない） |
+| Notification Provider | 検出結果の通知先 | `disabled`（通知なし） | 承認済みProvider（Slack、Microsoft Teams 等） |
+
+- Google Drive・Anthropic・Slack は上記の「例」であり、Skill利用の必須の前提条件ではない
+- 承認済みTool/Connectorが利用できない場合は、ローカルファイルまたはユーザー提供データを使用するか、必要な設定をユーザーに確認する
 
 ---
 
@@ -25,7 +40,7 @@ SM の観察・介入タイミングを機械的に補完し、スクラムガ�
 ### パイプライン
 
 ```
-[Google Meets 議事録（.docx）]
+[Conversation Source（ローカル議事録 or 承認済みConnector）(.docx)]
     ↓
 [抽出: text + 話者付き発言]  scripts/extract_transcript.py
     ↓
@@ -34,20 +49,20 @@ SM の観察・介入タイミングを機械的に補完し、スクラムガ�
     ├─ 純粋な業務連絡
     └─ 適切な質問（根拠付き）
     ↓
-[Detector: 検出]              prompts/01_detector.md  (Haiku 4.5)
+[Detector: 検出]              prompts/01_detector.md  (AI Provider)
     ↓
-[Responder: 応答生成]          prompts/02_responder.md (Opus 4.7)
+[Responder: 応答生成]          prompts/02_responder.md (AI Provider)
     ├─ SMへの分析（強）
     └─ メンバー介入時の問いの型（柔）
     ↓
-[Guard: 品質チェック]           prompts/03_guard.md     (Haiku 4.5)
+[Guard: 品質チェック]           prompts/03_guard.md     (AI Provider)
     ├─ 人格攻撃チェック
     └─ 権威依存チェック
     ↓
-[Aggregator: 日次サマリ生成]   prompts/04_aggregator.md (Opus 4.7)
+[Aggregator: 日次サマリ生成]   prompts/04_aggregator.md (AI Provider)
     └─ 個別指摘 + メタ分析（傾向）
     ↓
-[Slack DM 配信]               scripts/slack_notify.py
+[Notification Provider 配信（有効化時のみ）]  scripts/slack_notify.py（Slack実装例）
 ```
 
 ---
@@ -110,9 +125,8 @@ SM の観察・介入タイミングを機械的に補完し、スクラムガ�
 ### 前提条件
 
 - Python 3.10 以上
-- `ANTHROPIC_API_KEY`（Anthropic API キー）
-- `SLACK_BOT_TOKEN`（Slack Bot トークン）
-- `SLACK_USER_ID`（SM 本人の Slack User ID）
+- AI Provider の API キー（企業/PJが承認したAI Providerのもの。Anthropic APIを使用する場合は `ANTHROPIC_API_KEY`）
+- （Notification Providerを有効化する場合のみ）承認済みProviderの認証情報（Slackを使用する場合は `SLACK_BOT_TOKEN` / `SLACK_USER_ID`）
 
 ### インストール
 
@@ -125,7 +139,7 @@ pip install -r requirements.txt
 
 ```bash
 cp config/config.example.yaml config/config.yaml
-# config/config.yaml を編集して API キー・Slack 設定を記入
+# config/config.yaml を編集して Conversation Source・AI Provider・Notification Provider の設定を記入
 ```
 
 ---
