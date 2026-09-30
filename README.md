@@ -144,4 +144,5 @@ SkillまたはAgentが外部Toolを必要とする場合、既に利用環境で
 | [CLAUDE.md](CLAUDE.md) | Claude Code 固有の設定・MCP ツール・コマンド詳細 |
 | [AGENTS.md](AGENTS.md) | AI エージェント共通のコーディング規約・禁止事項 |
 | [docs/scrum-reference/dod-and-undone.md](docs/scrum-reference/dod-and-undone.md) | DoD・Undone 処理ガイド |
+| [docs/external-communication-audit.md](docs/external-communication-audit.md) | 外部通信静的検証レポート（Fail-Closed検討・外部通信箇所一覧） |
 | [.claude/skills/virtual-scrum-team/docs/folder-structure.md](.claude/skills/virtual-scrum-team/docs/folder-structure.md) | 議事録処理パイプライン |
