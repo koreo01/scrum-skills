@@ -13,8 +13,16 @@ ebanoide のメインパイプライン:
 実行例:
     python scripts/pipeline.py
     python scripts/pipeline.py --dry-run
+    python scripts/pipeline.py --offline
     python scripts/pipeline.py --transcript-dir /path/to/transcripts/
     python scripts/pipeline.py --date 2026-05-15
+
+--dry-run と --offline の違い:
+    --dry-run: Notification Provider（Slack等）への送信のみ抑止する。
+               Detector/Responder/Guard/Aggregator（AI Provider）への通信は発生する。
+    --offline: AI Provider・Notification Provider等、外部Networkへの通信を一切行わない。
+               Detector以降のAI Provider呼び出しをスキップするため、検出結果は常に空になる。
+               ANTHROPIC_API_KEY 等の認証情報も不要。
 """
 
 import argparse
@@ -379,8 +387,8 @@ def build_trend_data(config: dict, date: str) -> dict:
 # メインパイプライン
 # ─────────────────────────────────────
 
-def process_transcript(client: Anthropic, config: dict,
-                       transcript_path: Path, dry_run: bool = False) -> list[dict]:
+def process_transcript(client: Optional[Anthropic], config: dict,
+                       transcript_path: Path, offline: bool = False) -> list[dict]:
     """1つの議事録を処理して、Responder 出力のリストを返す"""
     logger = logging.getLogger("pipeline")
     logger.info(f"処理開始: {transcript_path}")
@@ -401,6 +409,10 @@ def process_transcript(client: Anthropic, config: dict,
         filtered.append(u)
 
     logger.info(f"  発言: {len(utterances)}件、除外: {excluded_count}件、対象: {len(filtered)}件")
+
+    if offline:
+        logger.info("  --offline のため Detector 以降の AI Provider 呼び出しをスキップします（検出結果なし）")
+        return []
 
     # Detector
     detections = run_detector(client, config, meta, filtered)
@@ -447,7 +459,17 @@ def process_transcript(client: Anthropic, config: dict,
 def main():
     parser = argparse.ArgumentParser(description="ebanoide パイプライン")
     parser.add_argument("--config", default="config/config.yaml", help="設定ファイルパス")
-    parser.add_argument("--dry-run", action="store_true", help="Slack送信せずログのみ")
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Notification Provider（Slack等）への送信のみ抑止する。"
+             "AI Provider（Detector/Responder/Guard/Aggregator）への通信は発生する",
+    )
+    parser.add_argument(
+        "--offline", action="store_true",
+        help="AI Provider・Notification Provider等、外部Networkへの通信を一切行わない。"
+             "Detector以降のAI Provider呼び出しをスキップするため検出結果は常に空になる。"
+             "ANTHROPIC_API_KEY 等の認証情報も不要（--dry-run の内容も自動的に含む）",
+    )
     parser.add_argument("--transcript-dir", help="議事録ディレクトリ（config上書き）")
     parser.add_argument("--date", help="処理対象日 (YYYY-MM-DD)")
     parser.add_argument("--transcript", help="単一議事録ファイルを処理")
@@ -456,18 +478,22 @@ def main():
 
     # 設定読み込み
     config = load_config(args.config)
-    if args.dry_run:
+    if args.dry_run or args.offline:
         config["safety"]["dry_run"] = True
 
     setup_logging(config)
     logger = logging.getLogger("main")
 
-    # API クライアント初期化
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        logger.error("ANTHROPIC_API_KEY 環境変数が設定されていません")
-        sys.exit(1)
-    client = Anthropic(api_key=api_key)
+    # API クライアント初期化（--offline の場合はAI Providerへ一切接続しないため不要）
+    if args.offline:
+        logger.info("=== OFFLINE MODE: AI Provider・Notification Providerへの通信を行いません ===")
+        client = None
+    else:
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            logger.error("ANTHROPIC_API_KEY 環境変数が設定されていません")
+            sys.exit(1)
+        client = Anthropic(api_key=api_key)
 
     # 処理対象日
     target_date = args.date or datetime.now(ZoneInfo(config["delivery"]["timezone"])).strftime("%Y-%m-%d")
@@ -478,7 +504,7 @@ def main():
 
     if args.transcript:
         # 単一ファイル
-        responses = process_transcript(client, config, Path(args.transcript), args.dry_run)
+        responses = process_transcript(client, config, Path(args.transcript), args.offline)
         all_responses.extend(responses)
     else:
         # ディレクトリから収集
@@ -495,7 +521,7 @@ def main():
                 logger.info(f"スキップ(除外): {path.name}")
                 continue
 
-            responses = process_transcript(client, config, path, args.dry_run)
+            responses = process_transcript(client, config, path, args.offline)
             all_responses.extend(responses)
 
     # 日次サマリ生成

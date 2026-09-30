@@ -146,11 +146,24 @@ cp config/config.example.yaml config/config.yaml
 
 ## 使い方
 
-### テスト実行（DRY RUN）
+### テスト実行（DRY RUN / OFFLINE）
+
+`--dry-run` と `--offline` は抑止する範囲が異なる。
+
+| フラグ | Notification Provider（Slack等）への送信 | AI Provider（Detector/Responder/Guard/Aggregator）への通信 | 認証情報 |
+| --- | --- | --- | --- |
+| `--dry-run` | 抑止（コンソール出力のみ） | **発生する**（実際にAI Providerへリクエストする） | AI Provider の認証情報が必要 |
+| `--offline` | 抑止（`--dry-run`を自動的に含む） | **発生しない**（Detector以降を丸ごとスキップし、検出結果は常に空） | 不要 |
 
 ```bash
+# AI Providerへの通信は発生するが、Notificationへの送信は行わない
 python .claude/skills/ebanoide/scripts/pipeline.py \
   --dry-run \
+  --transcript /path/to/transcript.docx
+
+# 外部Networkへの通信を一切行わない（動作確認・除外フィルタの検証用）
+python .claude/skills/ebanoide/scripts/pipeline.py \
+  --offline \
   --transcript /path/to/transcript.docx
 ```
 
