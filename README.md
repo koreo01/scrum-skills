@@ -137,6 +137,35 @@ SkillまたはAgentが外部Toolを必要とする場合、既に利用環境で
 
 ---
 
+## Git / Remote Repository Policy
+
+本リポジトリのGit関連Skill/Commandは、Git hosting serviceを特定製品に固定しない（Provider Neutral）。GitHub・GitHub Enterprise・GitLab・Azure DevOps・Bitbucket・Intranet上のGit serverなど、企業/Projectが承認したGit Remoteであれば、その所在（社内/社外）を問わず同等の選択肢として扱う（例: Intranet上のGitLab、AWS Private Subnet内のオンプレ型Git hosting、InternetのPrivate GitHub Repository等）。
+
+判断基準は「Remoteの所在（社内/社外）」ではなく「企業/Projectが承認・設定したRemoteであるか否か」である。SkillまたはAgentは、未承認のGit hosting serviceへのRepository作成、利用者の指示によらないRemote URLの変更、未承認Remoteの追加を行わない。
+
+Git Remote URL（`git remote -v`で確認できる接続先）は利用環境ごとに異なる環境依存情報であり、本リポジトリのドキュメント・設定はRemote URLを固定値として保持しない。
+
+### Git標準操作とGitHub固有操作の区分
+
+| 区分 | 操作例 | 性質 |
+| --- | --- | --- |
+| Git標準操作 | `git status` / `diff` / `commit` / `fetch` / `pull` / `push` / `branch` 等 | Git hosting serviceに依存しない基本操作 |
+| GitHub固有操作 | `gh issue` / `gh pr` / `gh run` / `gh api` 等（`gh` CLI経由） | GitHub Issuesをチケット管理として利用する場合にのみ必要（詳細は [CLAUDE.md](CLAUDE.md) 参照） |
+
+GitHub以外のGit hosting serviceを利用するProjectでは、GitHub固有操作（`gh` CLI）は不要である。そのため `.claude/settings.json`（チーム共有設定）のallowリストにはGitHub固有操作を含めない。GitHub Issuesでのチケット管理を採用するProjectは、各自の `.claude/settings.local.json`（個人環境設定・gitignore対象）側で `gh issue` / `gh pr` 等を有効化する。
+
+### push_policy（確認要否）の設計方針
+
+- **チーム共有設定（`.claude/settings.json`）**: `git push`・`gh pr create`・`gh issue close` 等、Remoteやチケット管理システムへの書き込みを伴う操作はallowリストに含めない。**確認要求がデフォルト（Fail-Closed）**。本Skill一式を他の企業/Projectへ流用した場合も、まず確認要求の状態からスタートする。
+- **個人環境設定（`.claude/settings.local.json`）**: 自分の環境での自律的な開発ワークフローを望む場合、各自の裁量でallowリストに追加し自動化してよい。
+- CLAUDE.mdの「自律実行の原則」（Claudeが会話内で重ねて承認を求めない）自体はこの方針と独立している。「permission設定で許可された操作について会話内で確認を求めない」という層の話であり、実行可否の最終ゲートはpermission設定側にある。
+
+### Git認証情報の非保存
+
+Git認証情報（Personal Access Token・Deploy Token・SSH鍵等）は、[AGENTS.mdの外部ツール利用の共通原則](AGENTS.md#外部ツール利用の共通原則)（Secret非保存）に従い、repositoryへ保存せず利用環境側（環境変数・Credential Manager・SSH Agent等）で管理する。
+
+---
+
 ## 参照ドキュメント
 
 | ドキュメント | 内容 |
