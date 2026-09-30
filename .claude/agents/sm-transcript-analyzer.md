@@ -33,11 +33,12 @@ color: purple
 
 ### Step 0: 議事録の取得
 
-入力に応じて議事録テキストを取得する:
+入力に応じて議事録テキストを取得する（承認済みConnector/MCPの利用範囲は [AGENTS.md](../../AGENTS.md) の「外部ツール利用の共通原則」に従う）:
 
-- **Google Docs URL が渡された場合**: URLからファイルIDを抽出し（`https://docs.google.com/document/d/{fileId}/...` 形式）、`mcp__claude_ai_Google_Drive__read_file_content` ツールで全文を取得する
+- **Google Docs URL が渡された場合**（承認済みConnectorとしてGoogle Driveを利用する場合のImplementation Example）: URLからファイルIDを抽出し（`https://docs.google.com/document/d/{fileId}/...` 形式）、`mcp__claude_ai_Google_Drive__read_file_content` ツールで全文を取得する
 - **テキストが直接渡された場合**: そのまま使用する
-- **Google Drive の検索が必要な場合**: `mcp__claude_ai_Google_Drive__search_files` で議事録を検索し、該当ファイルを取得する
+- **Google Drive の検索が必要な場合**（同上、Implementation Example）: `mcp__claude_ai_Google_Drive__search_files` で議事録を検索し、該当ファイルを取得する
+- **承認済みConnectorが利用できない場合**: ユーザーから直接渡されたテキスト・ローカルファイルを利用するか、必要な設定をユーザーに確認する
 
 ### Step 1: イベント種別の特定
 
