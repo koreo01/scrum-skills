@@ -97,6 +97,8 @@ scrum-skills/
 ├── docs/
 │   └── scrum-reference/       # スクラム参照ドキュメント
 │       └── dod-and-undone.md  # DoD・Undone 処理ガイド
+├── miro-usm/                  # Miro連携スクリプト（Optional Integration。下記ポリシー参照）
+│   └── deploy_usm.py
 └── .claude/
     ├── settings.json          # プロジェクト設定・権限
     ├── settings.local.json    # ローカル権限
