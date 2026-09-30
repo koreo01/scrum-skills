@@ -60,7 +60,7 @@ CLAUDE.md「完了チェックリストの進め方」に基づき、
 
 ### Step 1: git push
 
-現在のブランチをリモートに push します。
+現在のブランチを、企業/Projectが承認したRemote（[README.mdの「Git / Remote Repository Policy」](../../../README.md#git--remote-repository-policy)参照）へ保管・同期します。
 
 ```bash
 git push

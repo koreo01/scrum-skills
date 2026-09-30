@@ -114,6 +114,8 @@ git commit -m "[#{親TaskID}/#{SubTaskID}] 説明"
 
 コミット完了後、`/dev:end-session` を実行する。本コマンドが Step 0 で「途中 SubTask 完了」「最終 SubTask 完了」を自動判定し、以下を承認なしで一括実行する（詳細は `.claude/commands/dev/end-session.md` 参照）。
 
+> ℹ️ ここでの push は企業/Project が承認した Remote への保管・同期を指す（[README.mdの「Git / Remote Repository Policy」](../../README.md#git--remote-repository-policy)参照）。
+
 1. **git push**（pre-push 品質ゲート Hook が自動実行）
 2. **CI 結果確認**（失敗時は自動修正・再 push、最大 2 回リトライ）
 3. **PR 作成・マージ・ブランチ削除**（**最終 SubTask 完了時のみ**。途中 SubTask ではスキップ）
