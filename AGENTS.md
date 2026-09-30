@@ -66,6 +66,19 @@ Issue (Why)       → Requirement (What)  → Story (What Specified)
 └── Tech          → Requirement         → Story
 ```
 
+## 外部ツール利用の共通原則
+
+Skill・Agent定義が外部Tool（MCP・Connector・AI Provider・通知サービス等）を利用する場合、以下の6原則に従う（詳細は [README.md](README.md) の「External Tools / Services Policy」を参照）。
+
+1. **承認済みTool限定**: 利用企業/Projectが承認し、実行環境に設定済みのTool/Connector/MCPのみを使用する
+2. **自動新規接続禁止**: 承認されたToolが利用できない場合でも、別の外部サービスへ自動的に切り替えたり新規に接続を作成したりしない
+3. **データ送信禁止**: 業務データ・ソースコード・議事録等を、承認されていない外部サービスへ送信しない
+4. **既存承認済みTool優先**: 複数のIntegration手段がある場合、既に利用環境で承認・設定されているToolを優先する
+5. **未承認時のローカルデータ利用/ユーザー確認**: 承認済みToolが利用できない場合、ローカルファイルまたはユーザーから提供されたデータを利用するか、必要な設定をユーザーへ確認する
+6. **Secret非保存**: 外部サービスの認証情報・接続先・組織固有設定はrepositoryに保存せず、利用環境側（環境変数・Secret管理等）で設定する
+
+> Claude Code固有のツール選定（チケット管理はGitHub Issues経由・MCPサーバー不使用等）は [CLAUDE.md](CLAUDE.md) の「外部ツール利用ルール」を参照。
+
 ## 禁止事項
 
 - エージェントプロンプト内に特定プロジェクトの機密情報をハードコードしない

@@ -108,5 +108,6 @@
       }
     ]
   },
-  "notes": "このファイルは必要に応じてカスタマイズしてください"
+  "notes": "このファイルは必要に応じてカスタマイズしてください",
+  "_externalToolsPolicy": "外部Tool（MCP等）を許可設定に追加する場合は、AGENTS.mdの「外部ツール利用の共通原則」（承認済みTool限定・Secret非保存等）に従うこと。詳細はREADME.mdの「External Tools / Services Policy」参照。"
 }
