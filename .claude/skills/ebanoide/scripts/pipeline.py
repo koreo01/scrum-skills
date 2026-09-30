@@ -485,6 +485,9 @@ def main():
     logger = logging.getLogger("main")
 
     # API クライアント初期化（--offline の場合はAI Providerへ一切接続しないため不要）
+    # Fail-Closed検討（Issue #11）: AI Provider呼び出しは本スキルの主要機能のため
+    # デフォルト有効のまま維持する（値変更は既存利用者への破壊的変更になるため見送り）。
+    # --offline / --dry-run で明示的に無効化できる。
     if args.offline:
         logger.info("=== OFFLINE MODE: AI Provider・Notification Providerへの通信を行いません ===")
         client = None
