@@ -42,6 +42,8 @@
 | チケット管理（起票・更新・検索） | GitHub Issues（`gh issue` / `gh pr`） | MCPサーバーは使用しない |
 | 議事録取得 | （未設定） | — |
 
+> 上記は「本リポジトリで採用するツール」の選定表。外部Tool利用時の一般原則（承認済みTool限定・Secret非保存等）は [AGENTS.md](AGENTS.md) の「外部ツール利用の共通原則」を参照。
+
 ## リポジトリ概要
 
 スクラム開発を支援する Claude Code スキル集。Virtual Scrum Team（SM・PO・Dev Team）、議事録分析、PBI フォーマットチェック、アーキテクチャ依存性管理などのエージェント・コマンドを提供する。

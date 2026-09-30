@@ -1,6 +1,7 @@
 {
   "_description": "本リポジトリで利用するチケット管理システムの設定値。Hook / rules / commands が参照する。",
   "_customizationPolicy": "本ファイルの値（特に ticketId.prefix / pattern / example、commitMessage.pattern / formats / examples、branchNaming.formats / pattern / examples）は、利用する組織・ユーザーが採用しているチケット管理システム（Notion / Jira / Redmine / Linear / GitHub Issues 等）の ID 表記に合わせて書き換えること。本リポジトリのデフォルト値は GitHub Issues の `#123` 形式（gh CLI 経由）を採用しているが、他組織で流用する際はプレフィックス・正規表現・コミット例・ブランチ命名例の全てを自組織の表記へ置換する。`TICKET-123` 等の中立表現はあくまで本リポジトリの placeholder 値であり、これも自組織で利用する placeholder 値があれば差し替えてよい。",
+  "_externalToolsPolicy": "本ファイルが参照するチケット管理システム（gh CLI / GitHub Issues）は利用企業・Projectが承認したツールに限定すること。他ツールへの変更もAGENTS.mdの「外部ツール利用の共通原則」に従う。詳細はREADME.mdの「External Tools / Services Policy」参照。",
   "_appliesTo": [
     ".claude/hooks/pre-bash-bi-xxx-check.sh",
     ".claude/hooks/pre-bash-branch-source-check.sh",
