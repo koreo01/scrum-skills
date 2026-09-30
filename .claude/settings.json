@@ -25,9 +25,7 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git merge-base:*)",
-      "Bash(git rev-parse:*)",
-      "Bash(gh issue:*)",
-      "Bash(gh pr:*)"
+      "Bash(git rev-parse:*)"
     ],
     "deny": [
       "Bash(rm -rf /)*",
@@ -109,5 +107,6 @@
     ]
   },
   "notes": "このファイルは必要に応じてカスタマイズしてください",
-  "_externalToolsPolicy": "外部Tool（MCP等）を許可設定に追加する場合は、AGENTS.mdの「外部ツール利用の共通原則」（承認済みTool限定・Secret非保存等）に従うこと。詳細はREADME.mdの「External Tools / Services Policy」参照。"
+  "_externalToolsPolicy": "外部Tool（MCP等）を許可設定に追加する場合は、AGENTS.mdの「外部ツール利用の共通原則」（承認済みTool限定・Secret非保存等）に従うこと。詳細はREADME.mdの「External Tools / Services Policy」参照。",
+  "_pushPolicy": "gh issue/gh pr等のGitHub固有操作（Remote/チケット管理への書き込みを伴う）はチーム共有設定に含めない（確認要求がデフォルト）。個人環境での自動化は settings.local.json 側で行うこと。詳細はREADME.mdの「Git / Remote Repository Policy」参照。"
 }
