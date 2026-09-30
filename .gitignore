@@ -6,6 +6,10 @@ analysis/
 .DS_Store
 Thumbs.db
 
+# Python
+__pycache__/
+*.pyc
+
 # Claude Code 個人/動的ファイル（チーム共有資産はコミット対象）
 .claude/settings.local.json
 .claude/status/

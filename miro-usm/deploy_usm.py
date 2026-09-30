@@ -2,6 +2,11 @@
 """
 USM (User Story Mapping) を Miro ボードに自動展開するスクリプト。
 
+Optional Integration: Miroは企業/Projectが承認し、利用者が
+MIRO_ACCESS_TOKEN・MIRO_BOARD_IDを明示的に設定した場合のみ使用する
+（README.md「External Tools / Services Policy」参照）。承認・設定が
+ない場合はこのスクリプトを実行しない。
+
 使い方:
   python deploy_usm.py usm_data.json
 
