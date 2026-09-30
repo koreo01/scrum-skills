@@ -1,5 +1,9 @@
 # ebanoide 設定ファイル（テンプレート）
 # config.example.yaml をコピーして config.yaml として使用
+#
+# 外部連携（Conversation Source / AI Provider / Notification Provider）は
+# 利用企業・Projectが承認したTool/Connectorのみを使用すること。
+# 詳細は SKILL.md の「外部連携ポリシー」・AGENTS.md の「外部ツール利用の共通原則」を参照。
 
 # ─────────────────────────────────────
 # 配信タイミング
@@ -80,11 +84,12 @@ enabled_patterns:
     min_confidence: "high"
 
 # ─────────────────────────────────────
-# 配信先
+# 配信先（Notification Provider）
 # ─────────────────────────────────────
 notification:
-  channel: "DM"                              # DM or channel_id
-  recipient_user_id: "U_XXXXXXXX"            # あなた（SM）のSlack User ID
+  provider: "disabled"                       # disabled（デフォルト） or 承認済みProvider名（例: slack, teams）
+  channel: "DM"                              # DM or channel_id（providerが有効な場合のみ使用）
+  recipient_user_id: "U_XXXXXXXX"            # あなた（SM）のUser ID（providerが有効な場合のみ使用）
   max_items_per_day: 10                      # 1日あたり通知件数上限
   language: "ja"
 
@@ -104,7 +109,9 @@ meta_analysis:
   trend_window_days: 7           # 過去N日間の傾向分析
 
 # ─────────────────────────────────────
-# AI モデル設定
+# AI モデル設定（AI Provider は Optional Integration）
+# 企業/PJが承認したAI Providerのみを使用すること。
+# 以下はAnthropic APIを使用する場合の設定例。
 # ─────────────────────────────────────
 ai_models:
   detector:
@@ -121,11 +128,11 @@ ai_models:
     max_tokens: 4096
 
 # ─────────────────────────────────────
-# 議事録ソース
+# 議事録ソース（Conversation Source）
 # ─────────────────────────────────────
 transcript_source:
-  type: "google_drive"                       # google_drive or local
-  google_drive:
+  type: "google_drive"                       # local（デフォルト） or 承認済みConnector（例: google_drive）
+  google_drive:                              # 承認済みConnectorの例（Google Driveを使用する場合）
     folder_id: "XXXXXXXXXXX"                 # Meet Recordings フォルダID
     credentials_path: "./credentials/gdrive.json"
   local:
