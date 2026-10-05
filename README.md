@@ -118,7 +118,7 @@ scrum-skills/
         │   ├── config/        # スプリント設定
         │   ├── docs/          # 議事録処理フロー等
         │   └── templates/     # 出力テンプレート
-        └── ebanoide/          # 江端 CSM 哲学スキル
+        └── ebanoide/          # 某著名スクラムトレーナー CSM 哲学スキル
 ```
 
 ---
